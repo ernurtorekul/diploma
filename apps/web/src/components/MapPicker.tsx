@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import type { LeafletMouseEvent } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons in react-leaflet
@@ -19,7 +20,7 @@ interface MapPickerProps {
 
 function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
   useMapEvents({
-    click(e) {
+    click(e: LeafletMouseEvent) {
       onLocationSelect(e.latlng.lat, e.latlng.lng);
     },
   });
