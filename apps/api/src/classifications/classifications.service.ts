@@ -25,7 +25,7 @@ export class ClassificationsService {
         select: { name: true },
       });
 
-      const categoryNames = categories.map(c => c.name);
+      const categoryNames = categories.map((c: { name: string }) => c.name);
 
       if (categoryNames.length === 0) {
         throw new Error('No categories available for classification');

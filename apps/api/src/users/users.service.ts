@@ -16,7 +16,7 @@ export class UsersService {
       },
     });
 
-    return users.map((user, index) => ({
+    return users.map((user: any, index: number) => ({
       rank: index + 1,
       username: user.telegramId || 'Anonymous',
       points: user.ecoPoints,
