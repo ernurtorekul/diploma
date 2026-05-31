@@ -11,9 +11,9 @@
   "scripts": {
     "prebuild": "prisma generate",
     "build": "nest build",
-    "postinstall": "npx prisma generate && npx prisma db push --skip-generate --accept-data-loss",
+    "postinstall": "npx prisma generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "npx prisma db push --skip-generate --accept-data-loss && nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
