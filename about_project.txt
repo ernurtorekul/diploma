@@ -1,0 +1,359 @@
+---
+
+## PROJECT OVERVIEW
+
+**Project name:** Smart Waste — Intelligent Household Waste Classification System
+**Purpose:** Help citizens correctly dispose of waste by scanning a QR code next to a trash bin, taking a photo of their item, and receiving an AI-powered classification result. The system also monitors bin fullness and notifies responsible personnel via Telegram.
+
+---
+
+## SYSTEM ARCHITECTURE
+
+```
+/smart-waste
+  /apps
+    /web        → React + Vite + TailwindCSS (PWA, mobile-first + Admin Dashboard)
+    /api        → NestJS REST API (backend)
+    /pi-agent   → Python script (Raspberry Pi camera simulation)
+  /docs
+    /ml         → Ollama local ML documentation & OpenAI comparison
+```
+
+---
+
+## TECH STACK
+
+| Layer          | Technology                              |
+|----------------|-----------------------------------------|
+| Frontend       | React 18 + Vite + TailwindCSS           |
+| Admin UI       | Same React app — route: /admin          |
+| PWA            | vite-plugin-pwa                         |
+| Backend        | NestJS + REST API                       |
+| ORM            | Prisma                                  |
+| Database       | PostgreSQL                              |
+| ML / AI        | OpenAI Vision API (primary)             |
+| ML Alternative | Ollama with LLaVA model (documented)    |
+| Auth           | JWT for admin, QR-session for users     |
+| Notifications  | Telegram Bot API                        |
+| File Storage   | Cloudinary (trash item images)          |
+| Pi Integration | Python script → POST to NestJS endpoint |
+
+---
+
+## DATABASE SCHEMA (Prisma models)
+
+```prisma
+model User {
+  id           String   @id @default(uuid())
+  telegramId   String?  @unique
+  phoneNumber  String?
+  ecoPoints    Int      @default(0)
+  createdAt    DateTime @default(now())
+  classifications Classification[]
+}
+
+model Area {
+  id                String  @id @default(uuid())
+  name              String
+  responsiblePerson ResponsiblePerson?
+  bins              Bin[]
+}
+
+model ResponsiblePerson {
+  id         String  @id @default(uuid())
+  name       String
+  telegramId String
+  area       Area    @relation(fields: [areaId], references: [id])
+  areaId     String  @unique
+}
+
+model BinCategory {
+  id    String @id @default(uuid())
+  name  String         // e.g. "Recyclable", "General Trash"
+  color String         // hex color for UI
+  icon  String         // emoji or icon name
+  bins  Bin[]
+}
+
+model Bin {
+  id          String      @id @default(uuid())
+  qrCode      String      @unique
+  location    String
+  isFull      Boolean     @default(false)
+  area        Area        @relation(fields: [areaId], references: [id])
+  areaId      String
+  category    BinCategory @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  classifications Classification[]
+  notifications   Notification[]
+  createdAt   DateTime    @default(now())
+}
+
+model Classification {
+  id          String   @id @default(uuid())
+  imageUrl    String
+  result      String   // category name returned by AI
+  confidence  Float
+  pointsEarned Int     @default(10)
+  bin         Bin      @relation(fields: [binId], references: [id])
+  binId       String
+  user        User?    @relation(fields: [userId], references: [id])
+  userId      String?
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // "BIN_FULL" | "BIN_EMPTIED"
+  message   String
+  sentAt    DateTime @default(now())
+  status    String   @default("SENT")
+  bin       Bin      @relation(fields: [binId], references: [id])
+  binId     String
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+}
+```
+
+---
+
+## CORE FEATURES TO BUILD
+
+### 1. PWA — User Flow (mobile-first)
+- QR code is scanned → opens `https://yourapp.com/scan?binId=XXXX`
+- Page requests camera access
+- User snaps a photo of their trash item
+- Photo is uploaded to Cloudinary, URL is sent to NestJS
+- NestJS calls OpenAI Vision API with the image URL
+- AI returns: category name, confidence %, short description
+- User sees result: which bin to use, eco points earned
+- Points saved to user profile (identified by Telegram ID or anonymous session)
+
+### 2. Admin Dashboard (desktop-first, route: /admin)
+- Login with JWT
+- Manage BinCategories (add / edit / delete — default: Recyclable, General Trash)
+- Manage Areas and ResponsiblePersons
+- Manage Bins (add bin, generate QR code, assign to area + category)
+- View all Classifications (image, result, confidence, timestamp)
+- View all Notifications history
+- Manually mark a bin as full or empty
+- Leaderboard: top eco-point users
+
+### 3. Bin Fullness Notification Flow
+- Raspberry Pi (or simulated endpoint) sends POST /bins/:id/fullness { isFull: true }
+- NestJS updates bin status
+- NestJS finds responsible person for that bin's area
+- Sends Telegram message via Bot API: "Bin [location] is full. Please collect."
+- Notification is logged in DB
+
+### 4. Telegram Bot
+- One-way notification bot (no replies needed for v1)
+- ResponsiblePerson must have a Telegram ID registered in admin
+- Bot sends formatted message with bin location and area
+
+### 5. Eco Points System
+- Each successful classification = +10 points
+- Points stored per user (Telegram ID or anonymous)
+- Leaderboard visible on both PWA and Admin
+
+---
+
+## API ENDPOINTS (NestJS)
+
+```
+AUTH
+POST   /auth/admin/login
+
+BINS
+GET    /bins
+POST   /bins
+GET    /bins/:id
+PATCH  /bins/:id
+DELETE /bins/:id
+POST   /bins/:id/fullness       ← Pi agent calls this
+
+BIN CATEGORIES
+GET    /bin-categories
+POST   /bin-categories
+PATCH  /bin-categories/:id
+DELETE /bin-categories/:id
+
+AREAS
+GET    /areas
+POST   /areas
+PATCH  /areas/:id
+
+RESPONSIBLE PERSONS
+GET    /responsible-persons
+POST   /responsible-persons
+PATCH  /responsible-persons/:id
+
+CLASSIFICATIONS
+POST   /classifications         ← main scan endpoint
+GET    /classifications
+
+USERS (eco points)
+GET    /users/leaderboard
+GET    /users/:telegramId
+
+NOTIFICATIONS
+GET    /notifications
+```
+
+---
+
+## ML / AI INTEGRATION
+
+### Primary — OpenAI Vision API
+```typescript
+// In NestJS ClassificationService
+const response = await openai.chat.completions.create({
+  model: "gpt-4o",
+  messages: [
+    {
+      role: "user",
+      content: [
+        {
+          type: "image_url",
+          image_url: { url: imageUrl }
+        },
+        {
+          type: "text",
+          text: `You are a waste classification assistant. 
+          Available categories: ${categories.join(", ")}.
+          Analyze this image and return JSON only:
+          { "category": "string", "confidence": 0.0-1.0, "description": "string" }`
+        }
+      ]
+    }
+  ]
+});
+```
+
+### Alternative — Ollama + LLaVA (documented in /docs/ml)
+- Install: `ollama pull llava`
+- Run locally: `ollama run llava`
+- Same prompt structure, different endpoint
+- Document this in /docs/ml/ollama-setup.md as the open-source alternative
+
+---
+
+## RASPBERRY PI AGENT (/apps/pi-agent)
+
+```python
+# Simple Python script
+# Captures image from Pi camera at intervals
+# Checks if bin is full (via basic image analysis or ultrasonic sensor simulation)
+# POSTs to NestJS
+
+import requests
+import time
+
+API_URL = "http://your-api.com/bins/{bin_id}/fullness"
+
+def check_bin_fullness():
+    # Simulate: replace with real sensor or camera logic
+    is_full = True  # your detection logic here
+    requests.post(API_URL.format(bin_id="BIN_ID_HERE"), json={"isFull": is_full})
+
+while True:
+    check_bin_fullness()
+    time.sleep(300)  # check every 5 minutes
+```
+
+---
+
+## FOLDER STRUCTURE — NestJS API
+
+```
+/apps/api/src
+  /auth
+  /bins
+  /bin-categories
+  /areas
+  /responsible-persons
+  /classifications
+  /users
+  /notifications
+  /telegram
+  /prisma
+  /common
+    /guards
+    /decorators
+    /pipes
+  main.ts
+  app.module.ts
+```
+
+---
+
+## FOLDER STRUCTURE — React Web
+
+```
+/apps/web/src
+  /pages
+    /scan           ← QR landing page (mobile PWA)
+    /result         ← classification result
+    /leaderboard
+    /admin
+      /dashboard
+      /bins
+      /categories
+      /areas
+      /people
+      /notifications
+  /components
+    /ui
+    /camera
+    /charts
+  /hooks
+  /services         ← API calls
+  /store            ← Zustand or Context
+  main.tsx
+```
+
+---
+
+## CODING STANDARDS
+
+- NestJS: use Modules, Services, Controllers, DTOs, Guards strictly
+- Prisma: never write raw SQL unless necessary
+- React: functional components only, custom hooks for logic
+- All API responses follow: `{ data, message, success }`
+- Environment variables in `.env` — never hardcode secrets
+- Validate all inputs with class-validator in NestJS DTOs
+- Use async/await — no .then() chains
+
+---
+
+## WHAT TO BUILD FIRST (suggested order)
+
+1. PostgreSQL + Prisma setup + all models migrated
+2. NestJS: Auth module (admin JWT login)
+3. NestJS: BinCategory, Area, ResponsiblePerson, Bin CRUD
+4. NestJS: Classification endpoint + OpenAI Vision integration
+5. NestJS: Telegram notification service
+6. NestJS: Bin fullness endpoint
+7. React: Admin dashboard (login, manage bins/categories/areas)
+8. React: PWA scan page (camera, upload, result)
+9. React: Leaderboard
+10. Python: Pi agent script
+11. Docs: Ollama alternative setup
+
+---
+
+## AGENT BEHAVIOR RULES
+
+- Always explain WHY before writing code
+- When creating a new module, follow NestJS official structure strictly
+- When touching Prisma, always remind to run `npx prisma migrate dev`
+- When integrating OpenAI, always handle errors gracefully with fallback messages
+- Keep mobile UX in mind for the PWA — camera access, touch-friendly UI
+- Mark TODO comments where Raspberry Pi real hardware would replace simulated logic
+- Write code as if it will be presented to a university committee — clean, commented, structured
+
+---

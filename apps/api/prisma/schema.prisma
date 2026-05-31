@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  telegramId      String?           @unique
+  phoneNumber     String?
+  ecoPoints       Int               @default(0)
+  createdAt       DateTime          @default(now())
+  classifications Classification[]
+
+  @@map("users")
+}
+
+model Area {
+  id                 String             @id @default(uuid())
+  name               String
+  responsiblePerson  ResponsiblePerson?
+  bins               Bin[]
+
+  @@map("areas")
+}
+
+model ResponsiblePerson {
+  id         String  @id @default(uuid())
+  name       String
+  telegramId String
+  areaId     String  @unique
+  area       Area    @relation(fields: [areaId], references: [id])
+
+  @@map("responsible_persons")
+}
+
+model BinCategory {
+  id    String @id @default(uuid())
+  name  String
+  color String
+  icon  String
+  bins  Bin[]
+
+  @@map("bin_categories")
+}
+
+model Bin {
+  id                   String           @id @default(uuid())
+  qrCode               String           @unique
+  location             String
+  latitude             Float?
+  longitude            Float?
+  isFull               Boolean          @default(false)
+  fullnessPercentage   Int?             @default(0)
+  fullnessThreshold    Int              @default(85)
+  lastFullnessUpdate   DateTime?
+  areaId               String
+  categoryId           String
+  area                 Area             @relation(fields: [areaId], references: [id])
+  category             BinCategory      @relation(fields: [categoryId], references: [id])
+  classifications      Classification[]
+  notifications        Notification[]
+  createdAt            DateTime         @default(now())
+
+  @@map("bins")
+}
+
+model Classification {
+  id           String   @id @default(uuid())
+  imageUrl     String
+  result       String
+  confidence   Float
+  pointsEarned Int      @default(10)
+  binId        String
+  userId       String?
+  bin          Bin      @relation(fields: [binId], references: [id])
+  user         User?    @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@map("classifications")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  message   String
+  sentAt    DateTime @default(now())
+  status    String   @default("SENT")
+  binId     String
+  bin       Bin      @relation(fields: [binId], references: [id])
+
+  @@map("notifications")
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+
+  @@map("admins")
+}

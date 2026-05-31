@@ -1,0 +1,29 @@
+{
+  "name": "smart-waste",
+  "version": "1.0.0",
+  "description": "Smart Waste - Intelligent Household Waste Classification System",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "api": "cd apps/api && npm run start:dev",
+    "web": "cd apps/web && npm run dev",
+    "api:build": "cd apps/api && npm run build",
+    "web:build": "cd apps/web && npm run build",
+    "prisma:generate": "cd apps/api && npx prisma generate",
+    "prisma:migrate": "cd apps/api && npx prisma migrate dev",
+    "prisma:studio": "cd apps/api && npx prisma studio",
+    "install:all": "npm install && cd apps/api && npm install && cd ../web && npm install"
+  },
+  "keywords": [
+    "waste-management",
+    "classification",
+    "ai",
+    "ecology",
+    "nestjs",
+    "react"
+  ],
+  "author": "Ernur Torekul",
+  "license": "MIT"
+}
