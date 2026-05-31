@@ -13,7 +13,7 @@
     "build": "nest build",
     "postinstall": "npx prisma generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "npx prisma db push --skip-generate --accept-data-loss && nest start",
+    "start": "npx prisma db push --skip-generate --accept-data-loss && npx tsx prisma/seed.ts && nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
