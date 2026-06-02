@@ -21,9 +21,10 @@ export default function LeaderboardPage() {
   const loadLeaderboard = async () => {
     try {
       const response = await userService.getLeaderboard();
-      setLeaderboardData(response.data);
+      setLeaderboardData(response.data || []);
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
+      setLeaderboardData([]);
     } finally {
       setLoading(false);
     }
@@ -124,7 +125,7 @@ export default function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {leaderboardData.map((entry) => (
+              {leaderboardData?.map((entry) => (
                 <tr
                   key={entry.rank}
                   className="border-b last:border-b-0 hover:bg-gray-50"

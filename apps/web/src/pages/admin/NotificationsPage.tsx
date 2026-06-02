@@ -37,10 +37,11 @@ export default function NotificationsPage() {
         api.get('/notifications'),
         api.get('/notifications/stats'),
       ]);
-      setNotifications(notificationsRes.data);
-      setStats(statsRes.data);
+      setNotifications(notificationsRes.data || []);
+      setStats(statsRes.data || { total: 0, sent: 0, failed: 0 });
     } catch (error) {
       console.error('Failed to load notifications:', error);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -138,7 +139,7 @@ export default function NotificationsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {notifications.map((notification) => (
+            {notifications?.map((notification) => (
               <div
                 key={notification.id}
                 className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"

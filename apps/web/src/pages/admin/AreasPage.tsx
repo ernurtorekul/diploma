@@ -26,9 +26,10 @@ export default function AreasPage() {
   const loadAreas = async () => {
     try {
       const response = await api.get('/areas');
-      setAreas(response.data);
+      setAreas(response.data || []);
     } catch (error) {
       console.error('Failed to load areas:', error);
+      setAreas([]);
     } finally {
       setLoading(false);
     }
@@ -114,7 +115,7 @@ export default function AreasPage() {
             </tr>
           </thead>
           <tbody>
-            {areas.map((area) => (
+            {areas?.map((area) => (
               <tr key={area.id} className="border-b last:border-b-0 hover:bg-gray-50">
                 <td className="py-3 px-4 font-medium text-gray-900">{area.name}</td>
                 <td className="py-3 px-4">

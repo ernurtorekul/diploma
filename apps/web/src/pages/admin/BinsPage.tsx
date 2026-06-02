@@ -58,11 +58,14 @@ export default function BinsPage() {
         api.get('/areas'),
         api.get('/bin-categories'),
       ]);
-      setBins(binsRes.data);
-      setAreas(areasRes.data);
-      setCategories(categoriesRes.data);
+      setBins(binsRes.data || []);
+      setAreas(areasRes.data || []);
+      setCategories(categoriesRes.data || []);
     } catch (error) {
       console.error('Failed to load bins:', error);
+      setBins([]);
+      setAreas([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -233,7 +236,7 @@ export default function BinsPage() {
             </tr>
           </thead>
           <tbody>
-            {bins.map((bin) => (
+            {bins?.map((bin) => (
               <tr key={bin.id} className="border-b last:border-b-0 hover:bg-gray-50">
                 <td className="py-3 px-4">
                   <code className="px-2 py-1 bg-gray-100 rounded text-sm">
@@ -386,7 +389,7 @@ export default function BinsPage() {
                     required
                   >
                     <option value="">Выберите район</option>
-                    {areas.map((area) => (
+                    {areas?.map((area) => (
                       <option key={area.id} value={area.id}>
                         {area.name}
                       </option>
@@ -399,7 +402,7 @@ export default function BinsPage() {
                     {editing ? 'Категория' : 'Категории (выберите все применимые)'}
                   </label>
                   <div className="space-y-2">
-                    {categories.map((category) => (
+                    {categories?.map((category) => (
                       <label key={category.id} className="flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
                         <input
                           type="checkbox"

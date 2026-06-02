@@ -30,10 +30,12 @@ export default function PeoplePage() {
         api.get('/responsible-persons'),
         api.get('/areas'),
       ]);
-      setPeople(peopleRes.data);
-      setAreas(areasRes.data);
+      setPeople(peopleRes.data || []);
+      setAreas(areasRes.data || []);
     } catch (error) {
       console.error('Failed to load data:', error);
+      setPeople([]);
+      setAreas([]);
     } finally {
       setLoading(false);
     }
@@ -119,7 +121,7 @@ export default function PeoplePage() {
             </tr>
           </thead>
           <tbody>
-            {people.map((person) => (
+            {people?.map((person) => (
               <tr key={person.id} className="border-b last:border-b-0 hover:bg-gray-50">
                 <td className="py-3 px-4 font-medium text-gray-900">{person.name}</td>
                 <td className="py-3 px-4">
@@ -209,7 +211,7 @@ export default function PeoplePage() {
                     required
                   >
                     <option value="">Выберите район</option>
-                    {areas.map((area) => (
+                    {areas?.map((area) => (
                       <option key={area.id} value={area.id}>
                         {area.name}
                       </option>

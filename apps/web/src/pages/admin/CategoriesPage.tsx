@@ -30,9 +30,10 @@ export default function CategoriesPage() {
   const loadCategories = async () => {
     try {
       const response = await api.get('/bin-categories');
-      setCategories(response.data);
+      setCategories(response.data || []);
     } catch (error) {
       console.error('Failed to load categories:', error);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ export default function CategoriesPage() {
 
       {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category) => (
+        {categories?.map((category) => (
           <div key={category.id} className="card">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
