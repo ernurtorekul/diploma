@@ -89,8 +89,10 @@ async function main() {
   console.log('✅ Responsible person created:', person.name);
 
   // Create Bins
-  const bin1 = await prisma.bin.create({
-    data: {
+  const bin1 = await prisma.bin.upsert({
+    where: { id: '9c4bdac7-3d02-4e70-b852-1e60e4e03ab8' },
+    update: {},
+    create: {
       id: '9c4bdac7-3d02-4e70-b852-1e60e4e03ab8',
       qrCode: 'BIN-ALM-001',
       location: 'Panfilov Street, near Central Park',
@@ -99,8 +101,10 @@ async function main() {
     },
   });
 
-  const bin2 = await prisma.bin.create({
-    data: {
+  const bin2 = await prisma.bin.upsert({
+    where: { qrCode: 'BIN-ALM-002' },
+    update: {},
+    create: {
       qrCode: 'BIN-ALM-002',
       location: 'Republic Square, main entrance',
       areaId: area.id,
@@ -108,8 +112,10 @@ async function main() {
     },
   });
 
-  const bin3 = await prisma.bin.create({
-    data: {
+  const bin3 = await prisma.bin.upsert({
+    where: { qrCode: 'BIN-ALM-003' },
+    update: {},
+    create: {
       qrCode: 'BIN-ALM-003',
       location: 'Dostyk Avenue, near mall',
       areaId: area.id,
@@ -117,8 +123,10 @@ async function main() {
     },
   });
 
-  const bin4 = await prisma.bin.create({
-    data: {
+  const bin4 = await prisma.bin.upsert({
+    where: { qrCode: 'BIN-ALM-004' },
+    update: {},
+    create: {
       qrCode: 'BIN-ALM-004',
       location: 'Tulebaev Street, residential area',
       areaId: area.id,
