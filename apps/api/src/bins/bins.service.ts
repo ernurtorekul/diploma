@@ -112,18 +112,22 @@ export class BinsService {
   }
 
   async remove(id: string) {
-    // First, delete related classifications and notifications
-    await this.prisma.classification.deleteMany({
-      where: { binId: id },
-    });
+    // Use a transaction to ensure all deletes happen together
+    return await this.prisma.$transaction(async (tx) => {
+      // First, delete related classifications
+      await tx.classification.deleteMany({
+        where: { binId: id },
+      });
 
-    await this.prisma.notification.deleteMany({
-      where: { binId: id },
-    });
+      // Then delete related notifications
+      await tx.notification.deleteMany({
+        where: { binId: id },
+      });
 
-    // Then delete the bin
-    return this.prisma.bin.delete({
-      where: { id },
+      // Finally delete the bin
+      return await tx.bin.delete({
+        where: { id },
+      });
     });
   }
 
