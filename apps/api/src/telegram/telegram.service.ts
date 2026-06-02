@@ -54,6 +54,17 @@ export class TelegramService {
     const fullnessPercentage = bin.fullnessPercentage ?? 0;
     const urgency = this.getUrgencyLabel(fullnessPercentage);
 
+    // Format time for Almaty, Kazakhstan (UTC+6)
+    const almatyTime = new Date().toLocaleString('ru-KZ', {
+      timeZone: 'Asia/Almaty',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
     let message = `
 🗑️ <b>Контейнер заполнен!</b>
 
@@ -63,7 +74,7 @@ ${urgency}
 🏷️ <b>QR-код:</b> ${bin.qrCode}
 📁 <b>Категория:</b> ${bin.category?.icon || ''} ${bin.category?.name || ''}
 📊 <b>Заполненность:</b> ${fullnessPercentage}%
-⏰ <b>Время:</b> ${new Date().toLocaleString('ru-KZ')}
+⏰ <b>Время:</b> ${almatyTime}
 `;
 
     // Add map link if coordinates are available
@@ -90,6 +101,17 @@ ${urgency}
   async sendBinEmptiedNotification(bin: any, responsiblePerson: any): Promise<boolean> {
     const fullnessPercentage = bin.fullnessPercentage ?? 0;
 
+    // Format time for Almaty, Kazakhstan (UTC+6)
+    const almatyTime = new Date().toLocaleString('ru-KZ', {
+      timeZone: 'Asia/Almaty',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
     const message = `
 ✅ <b>Контейнер очищен</b>
 
@@ -97,7 +119,7 @@ ${urgency}
 
 🏷️ <b>QR-код:</b> ${bin.qrCode}
 📊 <b>Заполненность:</b> ${fullnessPercentage}%
-⏰ <b>Время:</b> ${new Date().toLocaleString('ru-KZ')}
+⏰ <b>Время:</b> ${almatyTime}
 
 ---
 <i>Smart Waste System</i>
