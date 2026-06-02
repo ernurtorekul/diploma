@@ -88,7 +88,7 @@ async function main() {
     update: {},
     create: {
       name: 'Aibek Smailov',
-      telegramId: '@aibek_sm',
+      telegramId: '', // Empty until user provides valid numeric chat ID
       areaId: area.id,
     },
   });

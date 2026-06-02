@@ -28,6 +28,7 @@ export default function AdminDashboardPage() {
   });
   const [recentBins, setRecentBins] = useState<Bin[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check authentication
@@ -44,7 +45,7 @@ export default function AdminDashboardPage() {
     try {
       // Fetch bins data
       const binsResponse = await api.get('/bins');
-      const bins = binsResponse.data;
+      const bins = binsResponse.data || [];
 
       // Calculate stats from real data
       const totalBins = bins.length;
@@ -52,7 +53,7 @@ export default function AdminDashboardPage() {
 
       // Fetch users count
       const usersResponse = await api.get('/users/leaderboard');
-      const totalUsers = usersResponse.data.length;
+      const totalUsers = (usersResponse.data || []).length;
 
       // Calculate total classifications
       const totalClassifications = bins.reduce((sum: number, b: any) => sum + (b._count?.classifications || 0), 0);
@@ -70,9 +71,12 @@ export default function AdminDashboardPage() {
         .sort((a: Bin, b: Bin) => new Date(b.lastFullnessUpdate).getTime() - new Date(a.lastFullnessUpdate).getTime())
         .slice(0, 5);
 
-      setRecentBins(binsWithUpdates);
+      setRecentBins(binsWithUpdates || []);
+      setError(null);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      setError('Failed to load dashboard data');
+      setRecentBins([]);
     } finally {
       setLoading(false);
     }
@@ -239,7 +243,7 @@ export default function AdminDashboardPage() {
           <div className="card">
             {recentBins.length > 0 ? (
               <div className="space-y-4">
-                {recentBins.map((bin) => (
+                {recentBins?.map((bin) => (
                   <div
                     key={bin.id}
                     className="flex items-center justify-between py-3 border-b last:border-b-0"
