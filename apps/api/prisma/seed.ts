@@ -91,6 +91,7 @@ async function main() {
   // Create Bins
   const bin1 = await prisma.bin.create({
     data: {
+      id: '9c4bdac7-3d02-4e70-b852-1e60e4e03ab8',
       qrCode: 'BIN-ALM-001',
       location: 'Panfilov Street, near Central Park',
       areaId: area.id,
