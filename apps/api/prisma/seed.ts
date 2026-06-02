@@ -76,9 +76,11 @@ async function main() {
   });
   console.log('✅ Area created:', area.name);
 
-  // Clean up existing bins to avoid conflicts
+  // Clean up existing data to avoid conflicts (respect foreign keys)
+  await prisma.classification.deleteMany({});
+  await prisma.notification.deleteMany({});
   await prisma.bin.deleteMany({});
-  console.log('🧹 Cleaned up existing bins');
+  console.log('🧹 Cleaned up existing data');
 
   // Create Responsible Person
   const person = await prisma.responsiblePerson.upsert({
