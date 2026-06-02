@@ -20,20 +20,32 @@ export class TelegramService {
       return false;
     }
 
+    if (!chatId || chatId === '') {
+      console.log('Telegram chat ID not provided. Skipping notification.');
+      return false;
+    }
+
     try {
-      await this.api.post('sendMessage', {
+      const response = await this.api.post('sendMessage', {
         chat_id: chatId,
         text: message,
         parse_mode: 'HTML',
       });
+      console.log('Telegram message sent successfully to chat ID:', chatId);
       return true;
     } catch (error) {
-      console.error('Failed to send Telegram message:', error.message);
+      console.error('Failed to send Telegram message:', error.response?.data || error.message);
       return false;
     }
   }
 
   async sendBinFullNotification(bin: any, responsiblePerson: any): Promise<boolean> {
+    // Skip if no valid telegram ID
+    if (!responsiblePerson?.telegramId || responsiblePerson.telegramId.startsWith('@')) {
+      console.log('Skipping Telegram notification: Invalid or missing chat ID');
+      return false;
+    }
+
     const message = this.formatBinFullMessage(bin);
     return await this.sendMessage(responsiblePerson.telegramId, message);
   }
