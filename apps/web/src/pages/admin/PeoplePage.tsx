@@ -30,8 +30,9 @@ export default function PeoplePage() {
         api.get('/responsible-persons'),
         api.get('/areas'),
       ]);
-      setPeople(peopleRes.data || []);
-      setAreas(areasRes.data || []);
+      // API interceptor unwraps response.data.data to just return the data
+      setPeople(peopleRes || []);
+      setAreas(areasRes || []);
     } catch (error) {
       console.error('Failed to load data:', error);
       setPeople([]);

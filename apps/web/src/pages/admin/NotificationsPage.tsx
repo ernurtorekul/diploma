@@ -37,8 +37,9 @@ export default function NotificationsPage() {
         api.get('/notifications'),
         api.get('/notifications/stats'),
       ]);
-      setNotifications(notificationsRes.data || []);
-      setStats(statsRes.data || { total: 0, sent: 0, failed: 0 });
+      // API interceptor unwraps response.data.data to just return the data
+      setNotifications(notificationsRes || []);
+      setStats(statsRes || { total: 0, sent: 0, failed: 0 });
     } catch (error) {
       console.error('Failed to load notifications:', error);
       setNotifications([]);

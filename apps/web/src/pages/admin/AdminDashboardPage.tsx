@@ -44,7 +44,8 @@ export default function AdminDashboardPage() {
     try {
       // Fetch bins data
       const binsResponse = await api.get('/bins');
-      const bins = binsResponse.data || [];
+      // API interceptor unwraps response.data.data to just return the data
+      const bins = binsResponse || [];
 
       // Calculate stats from real data
       const totalBins = bins.length;
@@ -52,7 +53,7 @@ export default function AdminDashboardPage() {
 
       // Fetch users count
       const usersResponse = await api.get('/users/leaderboard');
-      const totalUsers = (usersResponse.data || []).length;
+      const totalUsers = (usersResponse || []).length;
 
       // Calculate total classifications
       const totalClassifications = bins.reduce((sum: number, b: any) => sum + (b._count?.classifications || 0), 0);

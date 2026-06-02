@@ -26,7 +26,8 @@ export default function AreasPage() {
   const loadAreas = async () => {
     try {
       const response = await api.get('/areas');
-      setAreas(response.data || []);
+      // API interceptor unwraps response.data.data to just return the data
+      setAreas(response || []);
     } catch (error) {
       console.error('Failed to load areas:', error);
       setAreas([]);

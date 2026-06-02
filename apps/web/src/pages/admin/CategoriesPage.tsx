@@ -30,7 +30,8 @@ export default function CategoriesPage() {
   const loadCategories = async () => {
     try {
       const response = await api.get('/bin-categories');
-      setCategories(response.data || []);
+      // API interceptor unwraps response.data.data to just return the data
+      setCategories(response || []);
     } catch (error) {
       console.error('Failed to load categories:', error);
       setCategories([]);

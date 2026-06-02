@@ -58,9 +58,10 @@ export default function BinsPage() {
         api.get('/areas'),
         api.get('/bin-categories'),
       ]);
-      setBins(binsRes.data || []);
-      setAreas(areasRes.data || []);
-      setCategories(categoriesRes.data || []);
+      // API interceptor unwraps response.data.data to just return the data
+      setBins(binsRes || []);
+      setAreas(areasRes || []);
+      setCategories(categoriesRes || []);
     } catch (error) {
       console.error('Failed to load bins:', error);
       setBins([]);

@@ -21,7 +21,8 @@ export default function LeaderboardPage() {
   const loadLeaderboard = async () => {
     try {
       const response = await userService.getLeaderboard();
-      setLeaderboardData(response.data || []);
+      // API interceptor unwraps response.data.data to just return the data
+      setLeaderboardData(response || []);
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
       setLeaderboardData([]);
