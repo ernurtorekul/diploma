@@ -4,11 +4,12 @@ Edit these values for your setup.
 """
 
 # ============== WIFI ==============
-WIFI_SSID = "OPPO A78"
-WIFI_PASSWORD = "123123456"
+WIFI_SSID = "Galaxy"
+WIFI_PASSWORD = "Devilness"
 
 # ============== API ==============
-API_URL = "http://10.68.105.149:3000/api"  # Your NestJS API URL (Mac's WiFi IP)
+# API_URL = "http://10.68.105.149:3000/api"  # Your NestJS API URL (Mac's WiFi IP)
+API_URL = "https://api-production-c7461.up.railway.app/api"  # Your NestJS API URL (Mac's WiFi IP)
 BIN_ID = "9c4bdac7-3d02-4e70-b852-1e60e4e03ab8"  # BIN-ALM-001 - Panfilov Street, near Central Park
 
 # ============== HARDWARE ==============
