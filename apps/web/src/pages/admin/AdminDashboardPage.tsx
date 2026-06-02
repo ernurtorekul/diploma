@@ -28,7 +28,6 @@ export default function AdminDashboardPage() {
   });
   const [recentBins, setRecentBins] = useState<Bin[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check authentication
@@ -72,10 +71,8 @@ export default function AdminDashboardPage() {
         .slice(0, 5);
 
       setRecentBins(binsWithUpdates || []);
-      setError(null);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      setError('Failed to load dashboard data');
       setRecentBins([]);
     } finally {
       setLoading(false);
